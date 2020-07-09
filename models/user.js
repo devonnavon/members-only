@@ -9,7 +9,7 @@ var UserSchema = new Schema({
 	password: { type: String, required: true },
 });
 
-// Virtual for author's full name
+// Virtual for users's full name
 UserSchema.virtual('full_name').get(function () {
 	var fullname = '';
 	if (this.first_name && this.family_name) {
