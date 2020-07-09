@@ -1,12 +1,16 @@
 const User = require('../models/user');
+const Message = require('../models/message');
 const passport = require('passport');
 const bcrypt = require('bcryptjs');
 
 const validator = require('express-validator');
 const async = require('async');
+const { locals } = require('../app');
 
-exports.index = (req, res) => {
-	res.render('index', { title: 'Lord', user: req.user });
+exports.index = async (req, res) => {
+	const messages = await Message.find().populate('user');
+
+	res.render('index', { title: 'Lord', user: req.user, messages: messages });
 };
 
 exports.sign_up_get = (req, res, next) => {
@@ -95,3 +99,43 @@ exports.log_out_get = (req, res) => {
 	req.logout();
 	res.redirect('/');
 };
+
+exports.join_post = [
+	validator.body('join').equals('lord').withMessage('incorrect secret'),
+	validator.body('*').escape(),
+	(req, res, next) => {
+		const errors = validator.validationResult(req);
+		if (!errors.isEmpty()) {
+			//there are errors
+			res.redirect('/');
+		} else {
+			req.user.membership_status = true;
+			req.user.save();
+			res.redirect('/');
+		}
+	},
+];
+
+exports.message_post = [
+	validator.body('*').escape(),
+	(req, res, next) => {
+		const errors = validator.validationResult(req);
+		if (!errors.isEmpty()) {
+			//there are errors
+			res.redirect('/');
+		} else {
+			const message = new Message({
+				title: req.body.title,
+				text: req.body.text,
+				user: req.user,
+			});
+
+			message.save((err) => {
+				if (err) {
+					return next(err);
+				}
+				res.redirect('/');
+			});
+		}
+	},
+];

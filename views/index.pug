@@ -3,12 +3,43 @@ extends layout
 block content
   h1= title
   if user
-    p Welcome #{user}
+    p Welcome #{locals.currentUser.first_name}
   else
     p Welcome to #{title}
   br
   if user
+    if user.membership_status==false
+      form(method='POST' action='/join')
+            div.form-group
+                label(for='join') Join the club:
+                input(type='text', placeholder='Secret' name='join' required='true' value=(user===undefined ? '' : user.membership_status) )
+                button(type='submit') Enter Secret
+      if secret_error
+        p=secret_error
+  br
+  if user
+    form(method='POST' action='/message')
+      .form-group
+        label(for='title') Write a message:
+        br
+        input(type='text', placeholder='Subject' name='title' required='true')
+        br
+        label(for='text')
+        input(type='textarea', placeholder='I hate it here.', name='text', required='true', rows='4', cols='50')
+        br
+        button(type='submit') Post Message
+    br
     a(href='/log-out') Log Out
+  
   else 
     a(href='/sign-up') Sign Up 
     a(href='/log-in') Log In
+  ul
+    each val in messages
+      li= val.title
+        ul
+          li= val.text
+          li=val.timestamp
+          if user 
+            if user.membership_status==true
+              li=val.user.email
