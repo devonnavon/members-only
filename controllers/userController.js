@@ -35,7 +35,19 @@ exports.sign_up_post = [
 		.body('password')
 		.isLength({ min: 5 })
 		.withMessage('Password must be 5 atleast characters long'),
-	validator.sanitizeBody('*').escape(),
+	validator
+		.body('confirmpassword')
+		// .custom((value) => {
+		// 	if (value !== validator.body('password')) {
+		// 		throw new Error('Password confirmation does not match password');
+		// 	}
+		// })
+		.exists()
+		.custom((value, { req }) => value === req.body.password)
+		.withMessage('its not the same man'),
+
+	// Indicates the success of this synchronous custom validator
+	validator.body('*').escape(),
 	(req, res, next) => {
 		const errors = validator.validationResult(req);
 
