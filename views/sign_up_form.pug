@@ -30,13 +30,13 @@ block content
     form(method='POST' action='')
         div.form-group
             label(for='first_name') First Name:
-            input(type='text', placeholder='Jimmy' name='first_name' required='true' value=(user.first_name===undefined ? '' : user.first_name) )
+            input(type='text', placeholder='Jimmy' name='first_name' required='true' value=(user===undefined ? '' : user.first_name) )
             br
             label(for='last_name') Last Name:
-            input(type='text', placeholder='John' name='last_name' required='true' value=(user.last_name===undefined ? '' : user.last_name) )
+            input(type='text', placeholder='John' name='last_name' required='true' value=(user===undefined ? '' : user.last_name) )
             br
             label(for='email') E-mail:
-            input(type='email' placeholder='e@mail.com' name ='email' required='true' value=(user.email===undefined ? '' : user.email))
+            input(type='email' placeholder='e@mail.com' name ='email' required='true' value=(user===undefined ? '' : user.email))
             br
             label(for='password') Password:
             input(type='password' name='password' required='true')
@@ -50,4 +50,5 @@ block content
         ul
         for error in errors
             li!= error.msg
+    br
     a(href='/') Back To Home

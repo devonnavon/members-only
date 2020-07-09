@@ -1,10 +1,12 @@
 const User = require('../models/user');
+const passport = require('passport');
+const bcrypt = require('bcryptjs');
 
 const validator = require('express-validator');
 const async = require('async');
 
 exports.index = (req, res) => {
-	res.render('index', { title: 'Lord' });
+	res.render('index', { title: 'Lord', user: req.user });
 };
 
 exports.sign_up_get = (req, res, next) => {
@@ -37,11 +39,6 @@ exports.sign_up_post = [
 		.withMessage('Password must be 5 atleast characters long'),
 	validator
 		.body('confirmpassword')
-		// .custom((value) => {
-		// 	if (value !== validator.body('password')) {
-		// 		throw new Error('Password confirmation does not match password');
-		// 	}
-		// })
 		.exists()
 		.custom((value, { req }) => value === req.body.password)
 		.withMessage('its not the same man'),
@@ -49,31 +46,52 @@ exports.sign_up_post = [
 	// Indicates the success of this synchronous custom validator
 	validator.body('*').escape(),
 	(req, res, next) => {
-		const errors = validator.validationResult(req);
+		bcrypt.hash(req.body.password, 10, (err, hashedPassword) => {
+			const errors = validator.validationResult(req);
 
-		if (!errors.isEmpty()) {
-			//there are errors
-			res.render('sign_up_form', {
-				title: 'Sign Up',
-				user: req.body,
-				errors: errors.array(),
-			});
-		} else {
-			//form is valid bro
+			if (!errors.isEmpty()) {
+				//there are errors
+				res.render('sign_up_form', {
+					title: 'Sign Up',
+					user: req.body,
+					errors: errors.array(),
+				});
+			} else {
+				//form is valid bro
 
-			const user = new User({
-				first_name: req.body.first_name,
-				last_name: req.body.last_name,
-				email: req.body.email,
-				password: req.body.password,
-			});
+				const user = new User({
+					first_name: req.body.first_name,
+					last_name: req.body.last_name,
+					email: req.body.email,
+					password: hashedPassword,
+				});
 
-			user.save((err) => {
-				if (err) {
-					return next(err);
-				}
-				res.redirect('/');
-			});
-		}
+				user.save((err) => {
+					if (err) {
+						return next(err);
+					}
+					res.redirect('/');
+				});
+			}
+		});
 	},
 ];
+
+exports.log_in_get = (req, res, next) => {
+	res.render('log_in', { title: 'Login', msg: req.flash('error')[0] });
+};
+
+exports.log_in_post = [
+	validator.body('email').trim(),
+	passport.authenticate('local', {
+		successRedirect: '/',
+		failureRedirect: '/log-in',
+		failureFlash: true,
+		failureFlash: 'Invalid username or password.',
+	}),
+];
+
+exports.log_out_get = (req, res) => {
+	req.logout();
+	res.redirect('/');
+};

@@ -1,0 +1,18 @@
+extends layout
+
+block content
+    h1= title
+
+    form(method='POST' action='/log-in')
+        div.form-group
+            label(for='email') E-mail:
+            input(type='email' placeholder='e@mail.com' name ='email' required='true' value=(user===undefined ? '' : user.email))
+            br
+            label(for='password') Password:
+            input(type='password' name='password' required='true')
+            button(type='submit') Log In
+    br
+    if msg
+        p=msg
+    br
+    a(href='/') Back To Home
